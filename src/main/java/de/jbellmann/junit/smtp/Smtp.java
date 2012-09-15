@@ -1,3 +1,18 @@
+/**
+ * Copyright (C) 2010-2012 Joerg Bellmann <joerg.bellmann@googlemail.com>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package de.jbellmann.junit.smtp;
 
 import java.io.File;
@@ -17,6 +32,9 @@ import de.jbellmann.junit.smtp.subethamail.FileStorageWiser;
  *
  */
 public class Smtp extends ExternalResource {
+
+    private static final int MIN_PORT = 1;
+    private static final int MAX_PORT = 65535;
 
     public static final int DEFAULT_PORT = 2500;
 
@@ -38,8 +56,8 @@ public class Smtp extends ExternalResource {
     public Smtp() {
         this(new File(System.getProperty("user.dir"), "wiserMails"));
     }
-    
-    public Smtp(int port){
+
+    public Smtp(int port) {
         this(port, new File(System.getProperty("user.dir"), "wiserMails"));
     }
 
@@ -50,8 +68,8 @@ public class Smtp extends ExternalResource {
     }
 
     private void assertPort(int port) {
-        if (port < 1 || port > 650000) {
-            throw new RuntimeException("port should betwenn 0 an 650000");
+        if (port < MIN_PORT || port > MAX_PORT) {
+            throw new RuntimeException("port should betwenn " + MIN_PORT + " and " + MAX_PORT);
         }
     }
 
@@ -74,7 +92,7 @@ public class Smtp extends ExternalResource {
             targetDirectory.mkdirs();
         }
     }
-    
+
     /**
      * This method is just for testing mail delivery.
      * 
@@ -84,8 +102,8 @@ public class Smtp extends ExternalResource {
      * @param data the raw data
      * @throws SmtpRuntimeException 
      */
-    public void deliver(String from, String recipient, InputStream data ) throws SmtpRuntimeException {
-        if(wiser != null){
+    public void deliver(String from, String recipient, InputStream data) {
+        if (wiser != null) {
             try {
                 wiser.deliver(from, recipient, data);
             } catch (TooMuchDataException e) {
