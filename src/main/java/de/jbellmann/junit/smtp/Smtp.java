@@ -144,4 +144,8 @@ public class Smtp extends ExternalResource {
         this.wiser.addMimeMessageListener(mimeMessageListener);
         return this;
     }
+
+    public int getPort() {
+        return port;
+    }
 }
