@@ -22,7 +22,6 @@ import java.io.IOException;
 import org.junit.rules.ExternalResource;
 import org.subethamail.smtp.TooMuchDataException;
 
-
 /**
  * 
  * 
@@ -77,7 +76,7 @@ public class Smtp extends ExternalResource {
 
     @Override
     protected void before() throws Throwable {
-        if(wiser == null){
+        if (wiser == null) {
             throw new NullPointerException("Wiser is null. We can not start anything.");
         }
         wiser.start();
@@ -107,7 +106,8 @@ public class Smtp extends ExternalResource {
     public void deliverTestMail() {
         if (wiser != null) {
             try {
-                wiser.deliver("smtp.rule.test.from@test.de", "smtp.rule.test.recipient@test.de", new ByteArrayInputStream("This message was send by the Smtp itself as a test.".getBytes()));
+                wiser.deliver("smtp.rule.test.from@test.de", "smtp.rule.test.recipient@test.de", new ByteArrayInputStream(
+                        "This message was send by the Smtp itself as a test.".getBytes()));
             } catch (TooMuchDataException e) {
                 throw new SmtpRuntimeException(e);
             } catch (IOException e) {
@@ -132,15 +132,15 @@ public class Smtp extends ExternalResource {
      * @return
      */
     public Smtp dumpTo(File dumpDirectory) {
-        return new Smtp(port,dumpDirectory);
+        return new Smtp(port, dumpDirectory);
     }
-    
+
     public static Smtp onPort(int port) {
         assertPort(port);
         return new Smtp(port);
     }
-    
-    public Smtp addMimeMessageListener(MessageListener mimeMessageListener){
+
+    public Smtp addMimeMessageListener(MessageListener mimeMessageListener) {
         this.wiser.addMimeMessageListener(mimeMessageListener);
         return this;
     }
