@@ -15,14 +15,13 @@
  */
 package de.jbellmann.junit.smtp;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 
 import org.junit.rules.ExternalResource;
 import org.subethamail.smtp.TooMuchDataException;
 
-import de.jbellmann.junit.smtp.subethamail.FileStorageWiser;
 
 /**
  * 
@@ -40,34 +39,37 @@ public class Smtp extends ExternalResource {
 
     private int port = DEFAULT_PORT;
     private File targetDirectory;
-    private FileStorageWiser wiser;
+    private FileStorage wiser;
 
-    public Smtp(int port, File targetDirectory) {
+    private Smtp(int port, File targetDirectory) {
         assertPort(port);
         assertFile(targetDirectory);
         this.port = port;
         this.targetDirectory = targetDirectory;
+        createMailStore();
+        wiser = new FileStorage(targetDirectory);
+        wiser.setPort(port);
     }
 
-    public Smtp(File targetDirectory) {
+    private Smtp(File targetDirectory) {
         this(DEFAULT_PORT, targetDirectory);
     }
 
-    public Smtp() {
-        this(new File(System.getProperty("user.dir"), "wiserMails"));
+    private Smtp() {
+        this(new File(System.getProperty("user.dir"), "testMails"));
     }
 
     public Smtp(int port) {
-        this(port, new File(System.getProperty("user.dir"), "wiserMails"));
+        this(port, new File(System.getProperty("user.dir"), "testMails"));
     }
 
-    private void assertFile(File targetDirectory) {
+    private static void assertFile(File targetDirectory) {
         if (targetDirectory == null) {
             throw new RuntimeException("targetDirectory should not be null");
         }
     }
 
-    private void assertPort(int port) {
+    private static void assertPort(int port) {
         if (port < MIN_PORT || port > MAX_PORT) {
             throw new RuntimeException("port should betwenn " + MIN_PORT + " and " + MAX_PORT);
         }
@@ -75,9 +77,9 @@ public class Smtp extends ExternalResource {
 
     @Override
     protected void before() throws Throwable {
-        createMailStore();
-        wiser = new FileStorageWiser(targetDirectory);
-        wiser.setPort(port);
+        if(wiser == null){
+            throw new NullPointerException("Wiser is null. We can not start anything.");
+        }
         wiser.start();
     }
 
@@ -102,10 +104,10 @@ public class Smtp extends ExternalResource {
      * @param data the raw data
      * @throws SmtpRuntimeException 
      */
-    public void deliver(String from, String recipient, InputStream data) {
+    public void deliverTestMail() {
         if (wiser != null) {
             try {
-                wiser.deliver(from, recipient, data);
+                wiser.deliver("smtp.rule.test.from@test.de", "smtp.rule.test.recipient@test.de", new ByteArrayInputStream("This message was send by the Smtp itself as a test.".getBytes()));
             } catch (TooMuchDataException e) {
                 throw new SmtpRuntimeException(e);
             } catch (IOException e) {
@@ -114,4 +116,32 @@ public class Smtp extends ExternalResource {
         }
     }
 
+    /**
+     * Simplest way to get an Smtp-Resource with defaults.
+     * 
+     * @return
+     */
+    public static Smtp createDefault() {
+        return new Smtp();
+    }
+
+    /**
+     * Create an Smtp-Resource and specify the directory for message dumps.
+     * 
+     * @param dumpDirectory
+     * @return
+     */
+    public Smtp dumpTo(File dumpDirectory) {
+        return new Smtp(port,dumpDirectory);
+    }
+    
+    public static Smtp onPort(int port) {
+        assertPort(port);
+        return new Smtp(port);
+    }
+    
+    public Smtp addMimeMessageListener(MessageListener mimeMessageListener){
+        this.wiser.addMimeMessageListener(mimeMessageListener);
+        return this;
+    }
 }

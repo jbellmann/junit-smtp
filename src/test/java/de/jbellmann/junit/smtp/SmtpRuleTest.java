@@ -15,12 +15,8 @@
  */
 package de.jbellmann.junit.smtp;
 
-import java.io.ByteArrayInputStream;
-
 import org.junit.Rule;
 import org.junit.Test;
-
-import de.jbellmann.junit.smtp.Smtp;
 
 public class SmtpRuleTest {
 
@@ -28,12 +24,12 @@ public class SmtpRuleTest {
      * Default port is 2500.
      */
     @Rule
-    public Smtp smtp = new Smtp();
+    public Smtp smtp = Smtp.createDefault();
 
     @Test
     public void testSmtp() throws InterruptedException {
         Thread.sleep(1000);
-        smtp.deliver("from@test.de", "recipient@test.de", new ByteArrayInputStream("Mail-Message to from@test.de".getBytes()));
+        smtp.deliverTestMail();
         Thread.sleep(1000);
     }
 

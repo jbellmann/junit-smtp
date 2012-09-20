@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package de.jbellmann.junit.smtp.subethamail;
+package de.jbellmann.junit.smtp;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -27,7 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.subethamail.smtp.TooMuchDataException;
 
-import de.jbellmann.junit.smtp.subethamail.FileStorageWiser;
+import de.jbellmann.junit.smtp.FileStorage;
 
 /**
  * 
@@ -41,7 +41,7 @@ public class FileStorageWiserTest {
 
     private File mailStorageDirectory;
 
-    private FileStorageWiser wiser;
+    private FileStorage wiser;
 
     @Before
     public void setUp() throws IOException {
@@ -49,7 +49,7 @@ public class FileStorageWiserTest {
         mailStorageDirectory = new File(tempFileDirectory, UUID.randomUUID().toString());
         mailStorageDirectory.mkdirs();
         log.info("created directory for mail-storage : {}", mailStorageDirectory.getAbsolutePath());
-        wiser = new FileStorageWiser(mailStorageDirectory);
+        wiser = new FileStorage(mailStorageDirectory);
         wiser.setPort(25000);
         wiser.start();
     }
