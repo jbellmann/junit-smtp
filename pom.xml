@@ -90,8 +90,7 @@
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
-			<version>13.0</version>
-			<scope>test</scope>
+			<version>13.0.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jodd</groupId>

@@ -37,9 +37,8 @@ import org.subethamail.wiser.Wiser;
 
 import com.google.common.io.ByteStreams;
 
-
 /**
- * 
+ * Dumps a Mail in a File.
  * 
  * @author Joerg Bellmann
  *
@@ -54,7 +53,7 @@ class FileStorage extends Wiser {
     private final String uuid;
     private final AtomicInteger messageCounter = new AtomicInteger();
 
-    private List<MessageListener> mimeMessageListenerList = new LinkedList<MessageListener>();
+    private List<MailEventListener> mailEventListenerList = new LinkedList<MailEventListener>();
 
     public FileStorage(File storageDirectory) {
         super();
@@ -78,27 +77,66 @@ class FileStorage extends Wiser {
     }
 
     protected void notifyListener(String from, String recipient, byte[] data) throws IOException {
-        MimeMessage mimeMessage = null;
-        try {
-            mimeMessage = new MimeMessage(this.getSession(), new ByteArrayInputStream(data));
-            for (MessageListener listener : mimeMessageListenerList) {
-                listener.onMessage(mimeMessage);
-            }
-        } catch (MessagingException e) {
-            throw new RuntimeException(e.getMessage(), e);
+        MailEvent event = new MailEventImpl(from, recipient, data);
+        for (MailEventListener listener : mailEventListenerList) {
+            listener.onMailEvent(event);
         }
     }
 
     protected void writeToStorage(String from, String recipient, byte[] data) throws IOException {
-        String fileName = new StringBuilder(from).append("_to_").append(recipient).append("_").append(uuid).append("_")
-                .append(messageCounter.incrementAndGet()).append(".txt").toString();
+        String fileName = new StringBuilder(from).append("_to_")
+                                                .append(recipient)
+                                                .append("_")
+                                                .append(uuid)
+                                                .append("_")
+                                                .append(messageCounter.incrementAndGet())
+                                                .append(".txt").toString();
         File outputFile = new File(storageDirectory, fileName);
         outputFile.createNewFile();
         IOUtil.copy(new ByteArrayInputStream(data), new BufferedWriter(new FileWriter(outputFile)), DEFAULT_BUFFER_SIZE);
     }
 
-    void addMimeMessageListener(MessageListener mimeMessageListener) {
-        mimeMessageListenerList.add(mimeMessageListener);
+    void addMailEventListener(MailEventListener mailEventListener) {
+        mailEventListenerList.add(mailEventListener);
+    }
+
+    /**
+     * {@link MailEvent}-Implementation.
+     * 
+     * @author Joerg Bellmann
+     *
+     */
+    class MailEventImpl implements MailEvent {
+
+        private final String from;
+        private final String recipient;
+        private final byte[] data;
+
+        MailEventImpl(String from, String recipient, byte[] data) {
+            this.from = from;
+            this.recipient = recipient;
+            this.data = data;
+        }
+
+        @Override
+        public String getFrom() {
+            return this.from;
+        }
+
+        @Override
+        public String getRecipient() {
+            return this.recipient;
+        }
+
+        @Override
+        public MimeMessage getMimeMessage() {
+            try {
+                return new MimeMessage(getSession(), new ByteArrayInputStream(data));
+            } catch (MessagingException e) {
+                throw new RuntimeException(e.getMessage(), e);
+            }
+        }
+
     }
 
 }

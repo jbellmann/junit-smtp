@@ -17,17 +17,29 @@ package de.jbellmann.junit.smtp;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.IOException;
 
 import org.junit.rules.ExternalResource;
-import org.subethamail.smtp.TooMuchDataException;
 
 /**
- * 
- * 
+ * Simple Rule for starting and stopping an Smtp-Server.
+ * <br/>
+ * Example:
+ * <pre style="code">
+ * class MailTest {
+ *
+ *  {@literal @}Rule
+ *  public Smtp smtp = Smtp.createDefault();
+ *
+ *
+ *  public void testYourMailSender() {
+ *      int port = smtp.getPort();  // 2500
+ *      // send a mail here
+ *  }
+ *
+ * }
+ * </pre>
  * 
  * @author Joerg Bellmann
- *
  */
 public class Smtp extends ExternalResource {
 
@@ -108,9 +120,7 @@ public class Smtp extends ExternalResource {
             try {
                 wiser.deliver("smtp.rule.test.from@test.de", "smtp.rule.test.recipient@test.de", new ByteArrayInputStream(
                         "This message was send by the Smtp itself as a test.".getBytes()));
-            } catch (TooMuchDataException e) {
-                throw new SmtpRuntimeException(e);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 throw new SmtpRuntimeException(e);
             }
         }
@@ -140,8 +150,11 @@ public class Smtp extends ExternalResource {
         return new Smtp(port);
     }
 
-    public Smtp addMimeMessageListener(MessageListener mimeMessageListener) {
-        this.wiser.addMimeMessageListener(mimeMessageListener);
+    public Smtp addMimeMessageListener(MailEventListener mailEventListener) {
+        if (mailEventListener == null) {
+            throw new RuntimeException("The Listener to add should not be null.");
+        }
+        this.wiser.addMailEventListener(mailEventListener);
         return this;
     }
 
