@@ -27,7 +27,7 @@ public class JoddTest {
                 .subject("Hello!")
                 .addText("A plain text message...");
         
-        // this is not the server, it is as session-abstraction
+        // this is not the server, it is as sessionfactory-abstraction
         SmtpServer smtpServer = new SmtpServer("localhost", smtp.getPort());
         SendMailSession session = smtpServer.createSession();
         session.open();
